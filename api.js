@@ -97,8 +97,64 @@ async function loadNotes() {
   }
 }
 
+/**
+ * Handles creation of a new note via POST request with input validation.
+ * @param {SubmitEvent} event - The form submission event.
+ */
+async function createNote(event) {
+  event.preventDefault();
+
+  const title = titleInput.value.trim();
+  const body = bodyInput.value.trim();
+
+  // Input Validation Rules
+  if (!title) {
+    setStatus('Validation error: Title is required.', 'error');
+    return;
+  }
+
+  if (title.length > 100) {
+    setStatus('Validation error: Title must be 100 characters or fewer.', 'error');
+    return;
+  }
+
+  try {
+    submitBtn.disabled = true;
+    setStatus('Creating note...', 'loading');
+
+    const { data, status } = await request(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title,
+        body,
+        userId: 1,
+      }),
+    });
+
+    const createdNote = {
+      id: data.id,
+      title: data.title || title,
+      body: data.body || body,
+      userId: data.userId || 1,
+    };
+
+    notes.unshift(createdNote);
+    renderNotes();
+    noteForm.reset();
+    setStatus(`Note created (status ${status}, id ${data.id}).`, 'success');
+  } catch (error) {
+    setStatus(`Failed to create note: ${error.message}`, 'error');
+  } finally {
+    submitBtn.disabled = false;
+  }
+}
+
 // Event Listeners
 loadBtn.addEventListener('click', loadNotes);
+noteForm.addEventListener('submit', createNote);
 
 // Initial Render
 renderNotes();
