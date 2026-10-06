@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickNotes API Client</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="api.js" defer></script>
+</head>
+<body>
+  <header>
+    <h1>QuickNotes API Client</h1>
+    <p class="tagline">A lightweight REST API interface for managing notes in real time.</p>
+  </header>
+
+  <main>
+    <section class="card action-section">
+      <h2>Notes Controls</h2>
+      <button id="load-btn" type="button">Load notes</button>
+      <p id="status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="card form-section">
+      <h2>Create a New Note</h2>
+      <form id="note-form">
+        <div class="form-group">
+          <label for="title-input">Title</label>
+          <input type="text" id="title-input" placeholder="Note title (max 100 chars)...">
+        </div>
+        <div class="form-group">
+          <label for="body-input">Body</label>
+          <textarea id="body-input" rows="4" placeholder="Note body (optional)..."></textarea>
+        </div>
+        <button type="submit" id="submit-btn">Create Note</button>
+      </form>
+    </section>
+
+    <section class="card notes-section">
+      <h2>Your Notes</h2>
+      <ul id="notes-list"></ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 QuickNotes System Design. Built for high-scale performance.</p>
+  </footer>
+</body>
+</html>

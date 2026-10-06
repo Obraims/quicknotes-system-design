@@ -1,0 +1,104 @@
+// API Configuration
+const API_URL = 'https://jsonplaceholder.typicode.com/posts';
+
+// DOM Element Selections
+const loadBtn = document.getElementById('load-btn');
+const statusEl = document.getElementById('status');
+const noteForm = document.getElementById('note-form');
+const titleInput = document.getElementById('title-input');
+const bodyInput = document.getElementById('body-input');
+const submitBtn = document.getElementById('submit-btn');
+const notesList = document.getElementById('notes-list');
+
+// Module-level State
+let notes = [];
+
+/**
+ * Updates the status element text and applies corresponding status styling classes.
+ * @param {string} message - The text message to display.
+ * @param {'loading'|'success'|'error'} [type] - Status category for styling.
+ */
+function setStatus(message, type) {
+  statusEl.textContent = message;
+  statusEl.className = '';
+  if (type) {
+    statusEl.classList.add(`status-${type}`);
+  }
+}
+
+/**
+ * Reusable async HTTP request wrapper for fetch API calls.
+ * @param {string} url - Target endpoint URL.
+ * @param {RequestInit} [options={}] - Standard fetch configuration options.
+ * @returns {Promise<{ data: any, status: number }>} Response payload and status code.
+ */
+async function request(url, options = {}) {
+  const response = await fetch(url, options);
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! Status: ${response.status}`);
+  }
+
+  const contentType = response.headers.get('content-type');
+  let data = null;
+
+  if (contentType && contentType.includes('application/json')) {
+    data = await response.json();
+  }
+
+  return { data, status: response.status };
+}
+
+/**
+ * Renders the notes array into #notes-list using secure DOM creation methods.
+ */
+function renderNotes() {
+  notesList.replaceChildren();
+
+  if (notes.length === 0) {
+    const emptyLi = document.createElement('li');
+    emptyLi.className = 'empty-state';
+    emptyLi.textContent = "No notes loaded yet. Click 'Load notes' or create one above.";
+    notesList.appendChild(emptyLi);
+    return;
+  }
+
+  notes.forEach((note) => {
+    const li = document.createElement('li');
+
+    const titleEl = document.createElement('h3');
+    titleEl.textContent = note.title;
+
+    const bodyEl = document.createElement('p');
+    bodyEl.textContent = note.body || '';
+
+    li.appendChild(titleEl);
+    li.appendChild(bodyEl);
+    notesList.appendChild(li);
+  });
+}
+
+/**
+ * Fetches 10 notes from the backend API via GET request.
+ */
+async function loadNotes() {
+  try {
+    loadBtn.disabled = true;
+    setStatus('Loading notes...', 'loading');
+
+    const { data } = await request(`${API_URL}?_limit=10`);
+    notes = data || [];
+    renderNotes();
+    setStatus('Loaded 10 notes from the server.', 'success');
+  } catch (error) {
+    setStatus(`Failed to load notes: ${error.message}`, 'error');
+  } finally {
+    loadBtn.disabled = false;
+  }
+}
+
+// Event Listeners
+loadBtn.addEventListener('click', loadNotes);
+
+// Initial Render
+renderNotes();
