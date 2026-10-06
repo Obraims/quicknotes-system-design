@@ -72,8 +72,15 @@ function renderNotes() {
     const bodyEl = document.createElement('p');
     bodyEl.textContent = note.body || '';
 
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'delete-btn';
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.addEventListener('click', () => deleteNote(note.id, deleteBtn));
+
     li.appendChild(titleEl);
     li.appendChild(bodyEl);
+    li.appendChild(deleteBtn);
     notesList.appendChild(li);
   });
 }
@@ -149,6 +156,30 @@ async function createNote(event) {
     setStatus(`Failed to create note: ${error.message}`, 'error');
   } finally {
     submitBtn.disabled = false;
+  }
+}
+
+/**
+ * Deletes a note by ID via DELETE request and updates local state.
+ * @param {number|string} id - The unique ID of the note to delete.
+ * @param {HTMLButtonElement} buttonEl - The clicked delete button reference.
+ */
+async function deleteNote(id, buttonEl) {
+  // Note: JSONPlaceholder fakes POST creations (returning id 101+) without persisting them on the server. Sending DELETE /posts/{id} returns 200 OK for standard posts, and even if a fake id > 100 were rejected by a real server, we handle removal cleanly in local state after the request or fallback gracefully.
+  try {
+    buttonEl.disabled = true;
+    setStatus('Deleting note...', 'loading');
+
+    await request(`${API_URL}/${id}`, {
+      method: 'DELETE',
+    });
+
+    notes = notes.filter((n) => n.id !== id);
+    renderNotes();
+    setStatus('Note deleted successfully.', 'success');
+  } catch (error) {
+    setStatus(`Failed to delete note: ${error.message}`, 'error');
+    buttonEl.disabled = false;
   }
 }
 
